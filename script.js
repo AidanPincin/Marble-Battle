@@ -1,6 +1,9 @@
 const canvas = document.querySelector('canvas')
 const ctx = canvas.getContext('2d')
-
+var greenAlive = true
+var redAlive = true
+var yellowAlive = true
+var blueAlive = true
 class Marble{
     constructor(x,y,color,maxmotionX,maxmotionY,color2,delay){
         this.x = x
@@ -88,7 +91,7 @@ class Turret{
                 this.count = 1
             }
             else{
-                this.count *= 2
+                if (this.count<20000){this.count *= 2}
             }
             this.time = 0
         }
@@ -101,7 +104,6 @@ class Turret{
         ctx.fill()
         for (let i=0; i<this.marbles.length; i++){
             this.marbles[i].draw()
-            //var hit = this.marbles[i].detectCollision()
         }
         const hit = this.marbles.find((m) => m.detectCollision())
         if (hit != undefined){
@@ -113,21 +115,33 @@ class Turret{
                         let ocolor = allSquares[i][k].color
                         allSquares[i][k].color = this.color3
                         for (let g=0; g<greenSquares.length; g++){
+                            if (((x==20 && y==20) || (x==20 && y==0) || (x==0 && y==0) || (x==0 && y==20)) && hit.color != '#00ff00'){
+                                greenAlive = false
+                            }
                             if (greenSquares[g].x == x && greenSquares[g].y == y && greenSquares[g].color == ocolor){
                                 greenSquares.splice(g,1)
                             }
                         }
                         for (let g=0; g<blueSquares.length; g++){
+                            if (((x==780 && y==20) || (x==780 && y==0) || (x==800 && y==0) || (x==800 && y==20)) && hit.color != '#0000ff'){
+                                blueAlive = false
+                            }
                             if (blueSquares[g].x == x && blueSquares[g].y == y && blueSquares[g].color == ocolor){
                                 blueSquares.splice(g,1)
                             }
                         }
                         for (let g=0; g<redSquares.length; g++){
+                            if (((x==780 && y==780) || (x==780 && y==800) || (x==800 && y==800) || (x==800 && y==780)) && hit.color != '#ff0000'){
+                                redAlive = false
+                            }
                             if (redSquares[g].x == x && redSquares[g].y == y && redSquares[g].color == ocolor){
                                 redSquares.splice(g,1)
                             }
                         }
                         for (let g=0; g<yellowSquares.length; g++){
+                            if (((x==0 && y==800) || (x==20 && y==800) || (x==20 && y==780) || (x==0 && y==780)) && hit.color != '#ffff00'){
+                                yellowAlive = false
+                            }
                             if (yellowSquares[g].x == x && yellowSquares[g].y == y && yellowSquares[g].color == ocolor){
                                 yellowSquares.splice(g,1)
                             }
@@ -202,8 +216,20 @@ const blueTurret = new Turret(780,20,'#00007d','#0000bd',760,40,-1,1,'#0000ff')
 const redTurret = new Turret(780,780,'#7d0000','#bd0000',760,760,-1,-1,'#ff0000')
 const yellowTurret = new Turret(20,780,'#7d7d00','#bdbd00',40,780,1,-1,'#ffff00')
 const allSquares = [greenSquares,blueSquares,yellowSquares,redSquares]
-
 function update(){
+    var peepsAlive = 0
+    var alive = [yellowAlive, redAlive, greenAlive, blueAlive]
+    var peeps = ['yellow', 'red', 'green', 'blue']
+    var peepAlive = undefined
+    for (let i=0; i<alive.length; i++){
+        if (alive[i] == true){
+            peepsAlive += 1
+            peepAlive = peeps[i]
+        }
+    }
+    if (peepsAlive == 1){
+        alert(peepAlive+" won!")
+    }
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0,0,1000,800)
     ctx.fillStyle = '#000000'
@@ -229,10 +255,10 @@ function update(){
     for (let i=0; i<yellowSquares.length; i++){
         yellowSquares[i].draw()
     }
-    greenTurret.draw()
-    blueTurret.draw()
-    redTurret.draw()
-    yellowTurret.draw()
+    if(greenAlive==true){greenTurret.draw()}
+    if(blueAlive==true){blueTurret.draw()}
+    if(redAlive==true){redTurret.draw()}
+    if(yellowAlive==true){yellowTurret.draw()}
     ctx.fillStyle = '#000000'
     ctx.font = '24px Arial'
     ctx.fillText(greenTurret.chance.toFixed(3), 850, 200)
