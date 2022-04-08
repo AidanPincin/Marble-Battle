@@ -1,7 +1,7 @@
 const canvas = document.querySelector('canvas')
 const ctx = canvas.getContext('2d')
 function drawRect(color,x,y,w,h){ctx.fillStyle = color;ctx.fillRect(x,y,w,h)}
-const sqaureSize = 24
+const sqaureSize = 19
 class Square{
     constructor(x,y,color){
         this.x = x
@@ -57,9 +57,10 @@ class Marble{
     draw(){
         let width = (5+Math.pow(this.size,0.4))
         let height = width
-        for (let i=0; i<squares.length; i++){
+        let sqs = squares.filter(square => square.x<=this.x+width/2+sqaureSize*2 && square.x>=this.x-width/2-sqaureSize*2 && square.y<=this.y+height/2+sqaureSize*2 && square.y>=this.y-height/2-sqaureSize*2)
+        for (let i=0; i<sqs.length; i++){
             if (this.size>0){
-                let hit = squares[i].collide(this.x-width/2,this.y-height/2,width,height,this.squareColor)
+                let hit = sqs[i].collide(this.x-width/2,this.y-height/2,width,height,this.squareColor)
                 if (hit == true){this.size -= 1}
             }
         }
@@ -132,9 +133,8 @@ const blueTower = new Tower(1125,75,'#00007d','#0000ff',-Math.PI*1.66,-Math.PI/1
 const redTower = new Tower(275,925,'#7d0000','#ff0000',-Math.PI/1.5,Math.PI/5)
 const yellowTower = new Tower(1125,925,'#7d7d00','#ffff00',Math.PI/1.25,Math.PI*1.66)
 let time = 0
-drawRect('#000000',0,0,1400,1000)
 function mainLoop(){
-    drawRect('#000000',175,0,1050,1000)
+    drawRect('#000000',175,0,1250,1000)
     for (let i=0; i<squares.length; i++){squares[i].draw()}
     greenTower.draw()
     redTower.draw()
@@ -145,7 +145,7 @@ function mainLoop(){
 }
 mainLoop()
 setInterval(() => {
-    drawRect('#000000',0,0,1400,1000)
+    drawRect('#000000',0,0,200,1000)
     ctx.fillStyle = '#ffffff'
     ctx.font = '36px Arial'
     ctx.fillText(time,75,75)
