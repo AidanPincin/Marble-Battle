@@ -38,7 +38,7 @@ class Marble{
         this.y_speed = (15-Math.sqrt(Math.pow(this.x_speed,2)))*integer2
     }
     draw(){
-        let width = (5+Math.sqrt(Math.sqrt(this.size)))
+        let width = (5+Math.pow(this.size,0.5))
         let height = width
         for (let i=0; i<squares.length; i++){
             if (this.size>0){
@@ -47,7 +47,7 @@ class Marble{
             }
         }
         ctx.beginPath()
-        ctx.arc(this.x,this.y,5+Math.sqrt(Math.sqrt(this.size)),0,Math.PI*2,false)
+        ctx.arc(this.x,this.y,5+Math.pow(this.size,0.5),0,Math.PI*2,false)
         ctx.fillStyle = this.marbleColor
         ctx.fill()
         ctx.fillStyle = '#ffffff'
@@ -69,17 +69,18 @@ class Tower{
         this.marbleColor = marbleColor
         setInterval(() => {
             const chance = Math.random()
-            if (chance<0.5 && this.size<10000){
-                this.marbles.push(new Marble(x,y,this.size,marbleColor,squareColor,integer1,integer2))
+            if (chance>0.5 && this.size<5000){this.size *= 2}
+            else{
+                let radius = 5+Math.pow(this.size,0.5)
+                this.marbles.push(new Marble(x+(radius*integer1),y+(radius*integer2),this.size,marbleColor,squareColor,integer1,integer2))
                 this.size = 1
             }
-            else{this.size *= 2}
             console.log(this.marbles)
         },1000)
     }
     draw(){
         ctx.beginPath()
-        ctx.arc(this.x,this.y,10+Math.sqrt(Math.sqrt(this.size)),0,Math.PI*2,false)
+        ctx.arc(this.x,this.y,10+Math.pow(this.size,0.5),0,Math.PI*2,false)
         ctx.fillStyle = this.marbleColor
         ctx.fill()
         ctx.fillStyle = '#ffffff'
@@ -94,17 +95,27 @@ class Tower{
         }
     }
 }
-const greenTower = new Tower(275,75,'#007d00','#00ff00',1,1)
-const blueTower = new Tower(1125,75,'#00007d','#0000ff',-1,1)
-const redTower = new Tower(275,925,'#7d0000','#ff0000',1,-1)
-const yellowTower = new Tower(1125,925,'#7d7d00','#ffff00',-1,-1)
+const greenTower = new Tower(225,25,'#007d00','#00ff00',1,1)
+const blueTower = new Tower(1175,25,'#00007d','#0000ff',-1,1)
+const redTower = new Tower(225,975,'#7d0000','#ff0000',1,-1)
+const yellowTower = new Tower(1175,975,'#7d7d00','#ffff00',-1,-1)
+let time = 0
+drawRect('#000000',0,0,1400,1000)
 function mainLoop(){
-    drawRect('#000000',0,0,1400,1000)
+    drawRect('#000000',175,0,1050,1000)
     for (let i=0; i<squares.length; i++){squares[i].draw()}
     greenTower.draw()
     redTower.draw()
     yellowTower.draw()
     blueTower.draw()
+    time += 1
     requestAnimationFrame(mainLoop)
 }
 mainLoop()
+setInterval(() => {
+    drawRect('#000000',0,0,1400,1000)
+    ctx.fillStyle = '#ffffff'
+    ctx.font = '36px Arial'
+    ctx.fillText(time,75,75)
+    time = 0
+},1000)
