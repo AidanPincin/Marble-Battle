@@ -28,17 +28,34 @@ for (let i=0; i<500/(sqaureSize+1); i++){
     }
 }
 class Marble{
-    constructor(x,y,size,marbleColor,squareColor,integer1,integer2){
+    constructor(x,y,size,marbleColor,squareColor,angle){
         this.x = x
         this.y = y
+        let a = angle*20*Math.PI
+        if (a<0){a+=360}
+        if (a<90 && a>0){
+            this.y_speed = a/90*20
+            this.x_speed = 20-this.y_speed
+        }
+        if (a<360 && a>270){
+            this.x_speed = (a-270)/90*20
+            this.y_speed = this.x_speed-20
+        }
+        if (a<180 && a>90){
+            this.x_speed = -(a-90)/90*20
+            this.y_speed = 20+this.x_speed
+        }
+        if (a>180 && a<270){
+            this.y_speed = -(a-180)/90*20
+            this.x_speed = -(20-(this.y_speed*-1))
+            console.log(this.x_speed,this.y_speed)
+        }
         this.size = size
         this.marbleColor = marbleColor
         this.squareColor = squareColor
-        this.x_speed = Math.random()*15*integer1
-        this.y_speed = (15-Math.sqrt(Math.pow(this.x_speed,2)))*integer2
     }
     draw(){
-        let width = (5+Math.pow(this.size,0.5))
+        let width = (5+Math.pow(this.size,0.4))
         let height = width
         for (let i=0; i<squares.length; i++){
             if (this.size>0){
@@ -47,7 +64,7 @@ class Marble{
             }
         }
         ctx.beginPath()
-        ctx.arc(this.x,this.y,5+Math.pow(this.size,0.5),0,Math.PI*2,false)
+        ctx.arc(this.x,this.y,5+Math.pow(this.size,0.4),0,Math.PI*2,false)
         ctx.fillStyle = this.marbleColor
         ctx.fill()
         ctx.fillStyle = '#ffffff'
@@ -61,28 +78,39 @@ class Marble{
     }
 }
 class Tower{
-    constructor(x,y,marbleColor,squareColor,integer1,integer2){
+    constructor(x,y,marbleColor,squareColor,startAngle,endAngle){
         this.x = x
         this.y = y
         this.size = 1
         this.marbles = []
         this.marbleColor = marbleColor
+        this.angle = startAngle
+        this.clockwise = true
+        this.startAngle = startAngle
+        this.endAngle = endAngle
         setInterval(() => {
             const chance = Math.random()
             if (chance>0.5 && this.size<5000){this.size *= 2}
             else{
-                let radius = 5+Math.pow(this.size,0.5)
-                this.marbles.push(new Marble(x+(radius*integer1),y+(radius*integer2),this.size,marbleColor,squareColor,integer1,integer2))
+                this.marbles.push(new Marble(x,y,this.size,marbleColor,squareColor,this.angle))
                 this.size = 1
             }
-            console.log(this.marbles)
         },1000)
     }
     draw(){
         ctx.beginPath()
-        ctx.arc(this.x,this.y,10+Math.pow(this.size,0.5),0,Math.PI*2,false)
+        ctx.arc(this.x,this.y,10+Math.pow(this.size,0.4),0,Math.PI*2,false)
         ctx.fillStyle = this.marbleColor
         ctx.fill()
+        ctx.save()
+        ctx.translate(this.x,this.y)
+        ctx.rotate(this.angle)
+        ctx.moveTo(0,0)
+        ctx.lineTo(62.5,0)
+        ctx.strokeStyle = this.marbleColor
+        ctx.lineWidth = 10
+        ctx.stroke()
+        ctx.restore()
         ctx.fillStyle = '#ffffff'
         ctx.font = '18px Arial'
         let width = ctx.measureText(this.size).width
@@ -93,12 +121,16 @@ class Tower{
                 this.marbles.splice(i,1)
             }
         }
+        if (this.clockwise == true){this.angle += Math.PI/200}
+        else{this.angle -= Math.PI/200}
+        if (this.angle>this.endAngle){this.clockwise = false}
+        if (this.angle<this.startAngle){this.clockwise = true}
     }
 }
-const greenTower = new Tower(225,25,'#007d00','#00ff00',1,1)
-const blueTower = new Tower(1175,25,'#00007d','#0000ff',-1,1)
-const redTower = new Tower(225,975,'#7d0000','#ff0000',1,-1)
-const yellowTower = new Tower(1175,975,'#7d7d00','#ffff00',-1,-1)
+const greenTower = new Tower(275,75,'#007d00','#00ff00',-Math.PI/5,Math.PI/1.5)
+const blueTower = new Tower(1125,75,'#00007d','#0000ff',-Math.PI*1.66,-Math.PI/1.25)
+const redTower = new Tower(275,925,'#7d0000','#ff0000',-Math.PI/1.5,Math.PI/5)
+const yellowTower = new Tower(1125,925,'#7d7d00','#ffff00',Math.PI/1.25,Math.PI*1.66)
 let time = 0
 drawRect('#000000',0,0,1400,1000)
 function mainLoop(){
