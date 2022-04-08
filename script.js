@@ -1,270 +1,110 @@
 const canvas = document.querySelector('canvas')
 const ctx = canvas.getContext('2d')
-var greenAlive = true
-var redAlive = true
-var yellowAlive = true
-var blueAlive = true
-class Marble{
-    constructor(x,y,color,maxmotionX,maxmotionY,color2,delay){
-        this.x = x
-        this.y = y
-        this.color = color
-        this.color2 = color2
-        this.delay = delay
-        this.time = 0
-        var num = Math.random()*10
-        this.motionX = num*maxmotionX
-        this.motionY = (10-num)*maxmotionY
-    }
-
-    draw(){
-        if (this.time>=this.delay){
-            ctx.fillStyle = this.color
-            ctx.beginPath()
-            ctx.arc(this.x,this.y,7.5,0,Math.PI*2,false)
-            ctx.fill()
-            this.x += this.motionX
-            this.y += this.motionY
-            if (this.x>=800 || this.x<=0){
-                this.motionX *= -1
-            }
-            if (this.y>=800 || this.y<=0){
-                this.motionY *= -1
-            }
-        }
-        else{
-            this.time += 1
-        }
-    }
-
-    detectCollision(){
-        var x = Math.round(this.x/20)*20
-        var y = Math.round(this.y/20)*20
-        for (let i=0; i<allSquares.length; i++){
-            for (let k=0; k<allSquares[i].length; k++){
-                if (allSquares[i][k].x == x && allSquares[i][k].y == y){
-                    if (allSquares[i][k].color == this.color2){
-                        return false
-                    }
-                    else{
-                        return true
-                    }
-                }
-            }
-        }
-    }
-}
-class Turret{
-    constructor(x,y,color,color2,x2,y2,maxmotionX,maxmotionY,color3){
-        this.x = x
-        this.y = y
-        this.color = color
-        this.marbles = []
-        this.time = 0
-        this.color2 = color2
-        this.x2 = x2
-        this.y2 = y2
-        this.maxmotionX = maxmotionX
-        this.maxmotionY = maxmotionY
-        this.color3 = color3
-        this.count = 1
-        this.hold = 1
-        this.time2 = 0
-        this.shooting = false
-        this.time3 = 0
-        this.chance = 0.5
-    }
-
-    draw(){
-        var a = 0
-        if (this.time>=60 && this.shooting == false){
-            var chance = Math.random()
-            if (this.chance<(2/3)){this.chance += 0.00025}
-            if (chance>this.chance){
-                this.hold += this.count
-                this.shooting = true
-                while (this.count>a){
-                    this.marbles.push(new Marble(this.x2,this.y2,this.color2,this.maxmotionX,this.maxmotionY,this.color3,a*2))
-                    a+=1
-                    this.time2 += 2
-                }
-                this.count = 1
-            }
-            else{
-                if (this.count<20000){this.count *= 2}
-            }
-            this.time = 0
-        }
-        else if(this.shooting == false){
-            this.time += 1
-        }
-        ctx.fillStyle = this.color
-        ctx.beginPath()
-        ctx.arc(this.x,this.y,15,0,Math.PI*2,false)
-        ctx.fill()
-        for (let i=0; i<this.marbles.length; i++){
-            this.marbles[i].draw()
-        }
-        const hit = this.marbles.find((m) => m.detectCollision())
-        if (hit != undefined){
-            var x = Math.round(hit.x/20)*20
-            var y = Math.round(hit.y/20)*20
-            for (let i=0; i<allSquares.length; i++){
-                for (let k=0; k<allSquares[i].length; k++){
-                    if (allSquares[i][k].x == x && allSquares[i][k].y == y){
-                        let ocolor = allSquares[i][k].color
-                        allSquares[i][k].color = this.color3
-                        for (let g=0; g<greenSquares.length; g++){
-                            if (((x==20 && y==20) || (x==20 && y==0) || (x==0 && y==0) || (x==0 && y==20)) && hit.color != '#00ff00'){
-                                greenAlive = false
-                            }
-                            if (greenSquares[g].x == x && greenSquares[g].y == y && greenSquares[g].color == ocolor){
-                                greenSquares.splice(g,1)
-                            }
-                        }
-                        for (let g=0; g<blueSquares.length; g++){
-                            if (((x==780 && y==20) || (x==780 && y==0) || (x==800 && y==0) || (x==800 && y==20)) && hit.color != '#0000ff'){
-                                blueAlive = false
-                            }
-                            if (blueSquares[g].x == x && blueSquares[g].y == y && blueSquares[g].color == ocolor){
-                                blueSquares.splice(g,1)
-                            }
-                        }
-                        for (let g=0; g<redSquares.length; g++){
-                            if (((x==780 && y==780) || (x==780 && y==800) || (x==800 && y==800) || (x==800 && y==780)) && hit.color != '#ff0000'){
-                                redAlive = false
-                            }
-                            if (redSquares[g].x == x && redSquares[g].y == y && redSquares[g].color == ocolor){
-                                redSquares.splice(g,1)
-                            }
-                        }
-                        for (let g=0; g<yellowSquares.length; g++){
-                            if (((x==0 && y==800) || (x==20 && y==800) || (x==20 && y==780) || (x==0 && y==780)) && hit.color != '#ffff00'){
-                                yellowAlive = false
-                            }
-                            if (yellowSquares[g].x == x && yellowSquares[g].y == y && yellowSquares[g].color == ocolor){
-                                yellowSquares.splice(g,1)
-                            }
-                        }
-                        if(i==0){greenSquares.push(new Square(x,y,this.color3))}
-                        if(i==1){blueSquares.push(new Square(x,y,this.color3))}
-                        if(i==2){yellowSquares.push(new Square(x,y,this.color3))}
-                        if(i==3){redSquares.push(new Square(x,y,this.color3))}
-                    }
-                }
-            }
-            const index = this.marbles.indexOf(hit)
-            this.marbles.splice(index, 1)
-        }
-        ctx.fillStyle = '#000000'
-        ctx.font = '48px Arial'
-        if (this.shooting == false){ctx.fillText(this.count, this.x-20, this.y+20)}
-        else{
-            this.time2 -= 1
-            if (this.time3==1){
-                this.time3 = 0
-                this.hold -= 1
-            }
-            else{
-                this.time3 += 1
-            }
-            if (this.time2 == 1){
-                this.shooting = false
-            }
-            ctx.fillText(this.hold-1, this.x-20, this.y+20)
-        }
-    }
-}
+function drawRect(color,x,y,w,h){ctx.fillStyle = color;ctx.fillRect(x,y,w,h)}
+const sqaureSize = 24
 class Square{
     constructor(x,y,color){
-        this.color = color
         this.x = x
         this.y = y
+        this.color = color
+        this.width = sqaureSize
+        this.height = sqaureSize
     }
-
-    draw(){
-        ctx.fillStyle = this.color
-        ctx.fillRect(this.x+1,this.y+1,18,18)
-    }
-}
-const greenSquares = []
-const blueSquares = []
-const yellowSquares = []
-const redSquares = []
-for (let i=0; i<20; i++){
-    for (let k=0; k<20; k++){
-        greenSquares.push(new Square(i*20,k*20,'#00ff00'))
-    }
-}
-for (let i=0; i<20; i++){
-    for (let k=0; k<20; k++){
-        blueSquares.push(new Square(780-i*20,k*20,'#0000ff'))
-    }
-}
-for (let i=0; i<20; i++){
-    for (let k=0; k<20; k++){
-        redSquares.push(new Square(780-i*20,400+k*20,'#ff0000'))
-    }
-}
-for (let i=0; i<20; i++){
-    for (let k=0; k<20; k++){
-        yellowSquares.push(new Square(i*20,400+k*20,'#ffff00'))
-    }
-}
-const greenTurret = new Turret(20,20,'#007d00','#00bd00',40,40,1,1,'#00ff00')
-const blueTurret = new Turret(780,20,'#00007d','#0000bd',760,40,-1,1,'#0000ff')
-const redTurret = new Turret(780,780,'#7d0000','#bd0000',760,760,-1,-1,'#ff0000')
-const yellowTurret = new Turret(20,780,'#7d7d00','#bdbd00',40,780,1,-1,'#ffff00')
-const allSquares = [greenSquares,blueSquares,yellowSquares,redSquares]
-function update(){
-    var peepsAlive = 0
-    var alive = [yellowAlive, redAlive, greenAlive, blueAlive]
-    var peeps = ['yellow', 'red', 'green', 'blue']
-    var peepAlive = undefined
-    for (let i=0; i<alive.length; i++){
-        if (alive[i] == true){
-            peepsAlive += 1
-            peepAlive = peeps[i]
+    draw(){drawRect(this.color,this.x,this.y,this.width,this.height)}
+    collide(x,y,width,height,color){
+        if (x<=this.x+this.width && x+width>=this.x && y<=this.y+this.height && y+height>=this.y){
+            if (this.color != color){this.color = color; this.draw(); return true}
+            else{this.draw(); return false}
         }
     }
-    if (peepsAlive == 1){
-        alert(peepAlive+" won!")
-    }
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0,0,1000,800)
-    ctx.fillStyle = '#000000'
-    for (let i=0; i<=40; i++){
-        ctx.beginPath()
-        ctx.moveTo(0,i*20)
-        ctx.lineTo(800,i*20)
-        ctx.stroke()
-        ctx.beginPath()
-        ctx.moveTo(i*20, 0)
-        ctx.lineTo(i*20,800)
-        ctx.stroke()
-    }
-    for (let i=0; i<greenSquares.length; i++){
-        greenSquares[i].draw()
-    }
-    for (let i=0; i<blueSquares.length; i++){
-        blueSquares[i].draw()
-    }
-    for (let i=0; i<redSquares.length; i++){
-        redSquares[i].draw()
-    }
-    for (let i=0; i<yellowSquares.length; i++){
-        yellowSquares[i].draw()
-    }
-    if(greenAlive==true){greenTurret.draw()}
-    if(blueAlive==true){blueTurret.draw()}
-    if(redAlive==true){redTurret.draw()}
-    if(yellowAlive==true){yellowTurret.draw()}
-    ctx.fillStyle = '#000000'
-    ctx.font = '24px Arial'
-    ctx.fillText(greenTurret.chance.toFixed(3), 850, 200)
-    ctx.fillText(blueTurret.chance.toFixed(3), 850, 230)
-    ctx.fillText(redTurret.chance.toFixed(3), 850, 260)
-    ctx.fillText(yellowTurret.chance.toFixed(3), 850, 290)
-    requestAnimationFrame(update)
 }
-update()
+const squares = []
+for (let i=0; i<500/(sqaureSize+1); i++){
+    for (let g=0; g<500/(sqaureSize+1);g++){
+        squares.push(new Square(200+i*(sqaureSize+1),g*(sqaureSize+1),'#00ff00'))
+        squares.push(new Square(700+i*(sqaureSize+1),g*(sqaureSize+1),'#0000ff'))
+        squares.push(new Square(200+i*(sqaureSize+1),500+g*(sqaureSize+1),'#ff0000'))
+        squares.push(new Square(700+i*(sqaureSize+1),500+g*(sqaureSize+1),'#ffff00'))
+    }
+}
+class Marble{
+    constructor(x,y,size,marbleColor,squareColor,integer1,integer2){
+        this.x = x
+        this.y = y
+        this.size = size
+        this.marbleColor = marbleColor
+        this.squareColor = squareColor
+        this.x_speed = Math.random()*15*integer1
+        this.y_speed = (15-Math.sqrt(Math.pow(this.x_speed,2)))*integer2
+    }
+    draw(){
+        let width = (5+Math.sqrt(Math.sqrt(this.size)))
+        let height = width
+        for (let i=0; i<squares.length; i++){
+            if (this.size>0){
+                let hit = squares[i].collide(this.x-width/2,this.y-height/2,width,height,this.squareColor)
+                if (hit == true){this.size -= 1}
+            }
+        }
+        ctx.beginPath()
+        ctx.arc(this.x,this.y,5+Math.sqrt(Math.sqrt(this.size)),0,Math.PI*2,false)
+        ctx.fillStyle = this.marbleColor
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.font = '18px Arial'
+        width = ctx.measureText(this.size).width
+        ctx.fillText(this.size,this.x-width/2,this.y+5)
+        this.x += this.x_speed
+        this.y += this.y_speed
+        if (this.x>=1200-height || this.x<=200+height){this.x_speed *= -1}
+        if (this.y>=1000-height || this.y<=height){this.y_speed *= -1}
+    }
+}
+class Tower{
+    constructor(x,y,marbleColor,squareColor,integer1,integer2){
+        this.x = x
+        this.y = y
+        this.size = 1
+        this.marbles = []
+        this.marbleColor = marbleColor
+        setInterval(() => {
+            const chance = Math.random()
+            if (chance<0.5 && this.size<10000){
+                this.marbles.push(new Marble(x,y,this.size,marbleColor,squareColor,integer1,integer2))
+                this.size = 1
+            }
+            else{this.size *= 2}
+            console.log(this.marbles)
+        },1000)
+    }
+    draw(){
+        ctx.beginPath()
+        ctx.arc(this.x,this.y,10+Math.sqrt(Math.sqrt(this.size)),0,Math.PI*2,false)
+        ctx.fillStyle = this.marbleColor
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.font = '18px Arial'
+        let width = ctx.measureText(this.size).width
+        ctx.fillText(this.size,this.x-width/2,this.y+5)
+        for (let i=0; i<this.marbles.length; i++){
+            this.marbles[i].draw()
+            if (this.marbles[i].size<=0){
+                this.marbles.splice(i,1)
+            }
+        }
+    }
+}
+const greenTower = new Tower(275,75,'#007d00','#00ff00',1,1)
+const blueTower = new Tower(1125,75,'#00007d','#0000ff',-1,1)
+const redTower = new Tower(275,925,'#7d0000','#ff0000',1,-1)
+const yellowTower = new Tower(1125,925,'#7d7d00','#ffff00',-1,-1)
+function mainLoop(){
+    drawRect('#000000',0,0,1400,1000)
+    for (let i=0; i<squares.length; i++){squares[i].draw()}
+    greenTower.draw()
+    redTower.draw()
+    yellowTower.draw()
+    blueTower.draw()
+    requestAnimationFrame(mainLoop)
+}
+mainLoop()
